@@ -1,27 +1,20 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+﻿using System.Collections;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
     public const int TargetMoneySum = 3000000;
+    public float CurrentMoney = 0;
 
     private float ActiveIncome = 1;
     private float PassiveIncome = 0;
     private float PassiveIncomeInterval = 10;
     private float FinalPlayTime;
 
-    public float CurrentMoney = 0;
-
-    public TextMeshProUGUI MoneyText;
-    public TextMeshProUGUI ActiveIncomeMoneyText;
-    public TextMeshProUGUI PassiveIncomeMoneyText;
-    public TextMeshProUGUI PassiveIncomeIntervalText;
-
-    public UpgradesController UpgradesController;
-    public WinPopupController WinPopupController;
+    private UpgradesController UpgradesController;
+    private WinPopupController WinPopupController;
+    private BonusController BonusController;
+    private TextsController TextsController;
 
     void Start()
     {
@@ -34,21 +27,21 @@ public class GameController : MonoBehaviour
         StartPassiveIncomeCoroutine();
     }
 
-    public ref float GetActiveIncome() => ref ActiveIncome;
+    private ref float GetActiveIncome() => ref ActiveIncome;
 
-    public ref float GetPassiveIncome() => ref PassiveIncome;
+    private ref float GetPassiveIncome() => ref PassiveIncome;
 
-    public ref float GetPassiveIncomeInterval() => ref PassiveIncomeInterval;
+    private ref float GetPassiveIncomeInterval() => ref PassiveIncomeInterval;
 
-    public bool CanAffordActiveIncomeUpgrade() => CurrentMoney >= UpgradesController.NextActiveIncomeUpgradeCost;
+    private bool CanAffordActiveIncomeUpgrade() => CurrentMoney >= UpgradesController.NextActiveIncomeUpgradeCost;
 
-    public bool CanAffordPassiveIncomeUpgrade() => CurrentMoney >= UpgradesController.NextPassiveIncomeUpgradeCost;
+    private bool CanAffordPassiveIncomeUpgrade() => CurrentMoney >= UpgradesController.NextPassiveIncomeUpgradeCost;
 
-    public bool CanAffordPassiveIncomeIntervalUpgrade() => CurrentMoney >= UpgradesController.NextPassiveIncomeIntervalUpgradeCost;
+    private bool CanAffordPassiveIncomeIntervalUpgrade() => CurrentMoney >= UpgradesController.NextPassiveIncomeIntervalUpgradeCost;
 
-    public void DeductUpdateFee(float fee) => CurrentMoney -= fee;
+    private void DeductUpdateFee(float fee) => CurrentMoney -= fee;
 
-    public bool HasTheGameGoalHasBeenCompleted()
+    private bool HasTheGameGoalBeenCompleted()
     {
         if (CurrentMoney >= TargetMoneySum)
         {
@@ -58,40 +51,20 @@ public class GameController : MonoBehaviour
         return false;
     }
 
-    public void AddMoney(float income)
+    private void AddMoney(float income)
     {
         CurrentMoney += income;
 
-        if (HasTheGameGoalHasBeenCompleted())
+        if (HasTheGameGoalBeenCompleted())
         {
             SaveBestTime();
             WinPopupController.ShowWinPopup(FinalPlayTime);
         }
     }
 
-    public void StartPassiveIncomeCoroutine()
+    private void StartPassiveIncomeCoroutine()
     {
         StartCoroutine(PassiveIncomeCoroutine());
-    }
-
-    public void UpdateMoneyText()
-    {
-        MoneyText.text = string.Format("$ {0}", CurrentMoney < TargetMoneySum ? CurrentMoney.ToString("0.0") : TargetMoneySum.ToString("0.0"));
-    }
-
-    public void UpdateActiveIncomeText()
-    {
-        ActiveIncomeMoneyText.text = string.Format("$ per click: {0}", ActiveIncome);
-    }
-
-    public void UpdatePassiveIncomeText()
-    {
-        PassiveIncomeMoneyText.text = string.Format("$ over time: {0}", PassiveIncome.ToString("0.0"));
-    }
-
-    public void UpdatePassiveIncomeIntervalText()
-    {
-        PassiveIncomeIntervalText.text = string.Format("Time interval: {0}s", PassiveIncomeInterval.ToString("0.0"));
     }
 
     private IEnumerator PassiveIncomeCoroutine()
@@ -101,7 +74,7 @@ public class GameController : MonoBehaviour
         if (PassiveIncome > 0)
         {
             AddMoney(PassiveIncome);
-            UpdateMoneyText();
+            TextsController.UpdateMoneyText(CurrentMoney,TargetMoneySum);
         }
 
         StartPassiveIncomeCoroutine();
@@ -127,5 +100,49 @@ public class GameController : MonoBehaviour
         {
             PlayerPrefs.SetFloat("BestTime", GetPlayTime());
         }
+    }
+
+    public void IncreaseActiveIncome()
+    {
+        if (CanAffordActiveIncomeUpgrade() && UpgradesController.IsActiveIncomeUpgradeAvailable())
+        {
+            UpgradesController.IncreaseActiveIncome(ref GetActiveIncome());
+            DeductUpdateFee(UpgradesController.NextActiveIncomeUpgradeCost);
+            UpgradesController.SetNextActiveIncomeUpgradeCost(GetActiveIncome());
+            TextsController.UpdateActiveIncomeText(ref GetActiveIncome());
+        }
+    }
+
+    public void IncreasePassiveIncome()
+    {
+        if (CanAffordPassiveIncomeUpgrade() && UpgradesController.IsPassiveIncomeUpgradeAvailable())
+        {
+            UpgradesController.IncreasePassiveIncome(ref GetPassiveIncome());
+            DeductUpdateFee(UpgradesController.NextPassiveIncomeUpgradeCost);
+            UpgradesController.SetNextPassiveIncomeUpgradeCost();
+            TextsController.UpdatePassiveIncomeText(ref GetPassiveIncome());
+        }
+    }
+
+    public void DecreasePassiveIncomeInterval()
+    {
+        if (CanAffordPassiveIncomeIntervalUpgrade() && UpgradesController.IsPassiveIncomeIntervalUpgradeAvailable())
+        {
+            UpgradesController.DecreasePassiveIncomeInterval(ref GetPassiveIncomeInterval());
+            DeductUpdateFee(UpgradesController.NextPassiveIncomeIntervalUpgradeCost);
+            UpgradesController.SetNextPassiveIncomeIntervalUpgradeCost();
+            TextsController.UpdatePassiveIncomeIntervalText(ref GetPassiveIncomeInterval());
+        }
+    }
+
+    public void OnButtonClickedAction()
+    {
+        AddMoney(GetActiveIncome());
+        TextsController.UpdateMoneyText(CurrentMoney, TargetMoneySum);
+    }
+
+    public void UpdateTotalMoneyText()
+    {
+        TextsController.UpdateMoneyText(CurrentMoney, TargetMoneySum);
     }
 }
