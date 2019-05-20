@@ -19,62 +19,59 @@ public class ButtonsController : MonoBehaviour
     void Start(){
         MainButton.onClick.AddListener(()=> 
         {
-            if (!GameController.HasTheGameGoalHasBeenCompleted())
-            {
-                GameController.AddMoneyFromButton();
-                UpdateMoneyText();
-            }
+            GameController.AddMoney(GameController.GetActiveIncome());
+            GameController.UpdateMoneyText();
         });
 
         MoreActiveIncomeButton.onClick.AddListener(()=>
         {
             UpdateActiveIncome();
-            UpdateMoneyText();
+            GameController.UpdateMoneyText();
         });
 
         MorePassiveIncomeButton.onClick.AddListener(() =>
         {
             UpdatePassiveIncome();
-            UpdateMoneyText();
+            GameController.UpdateMoneyText();
         });
 
         FasterPassiveIncomeButton.onClick.AddListener(()=> 
         {
             UpdatePassiveIncomeInterval();
-            UpdateMoneyText();
+            GameController.UpdateMoneyText();
         });
-    }
-
-    public void UpdateMoneyText()
-    {
-        GameController.MoneyText.text = string.Format("$ {0}", GameController.CurrentMoney < GameController.TargetMoneySum ? GameController.CurrentMoney : GameController.TargetMoneySum);
     }
 
     private void UpdateActiveIncome()
     {
-        if(GameController.CanAffordActiveIncomeUpgrade())
+        if(GameController.CanAffordActiveIncomeUpgrade() && GameController.UpgradesController.IsActiveIncomeUpgradeAvailable())
         {
-            GameController.IncreaseActiveIncome();
-            GameController.SetNextActiveIncomeUpgradeCost();
+            GameController.UpgradesController.IncreaseActiveIncome(ref GameController.GetActiveIncome());
+            GameController.DeductUpdateFee(GameController.UpgradesController.NextActiveIncomeUpgradeCost);
+            GameController.UpgradesController.SetNextActiveIncomeUpgradeCost(GameController.GetActiveIncome());
+            GameController.UpdateActiveIncomeText();
         }
     }
 
     private void UpdatePassiveIncome()
     {
-        if (GameController.CanAffordPassiveIncomeUpgrade())
+        if (GameController.CanAffordPassiveIncomeUpgrade() && GameController.UpgradesController.IsPassiveIncomeUpgradeAvailable())
         {
-            GameController.IncreasePassiveIncome();
-            GameController.SetNextPassiveIncomeUpgradeCost();
+            GameController.UpgradesController.IncreasePassiveIncome(ref GameController.GetPassiveIncome());
+            GameController.DeductUpdateFee(GameController.UpgradesController.NextPassiveIncomeUpgradeCost);
+            GameController.UpgradesController.SetNextPassiveIncomeUpgradeCost();
+            GameController.UpdatePassiveIncomeText();
         }
     }
 
     private void UpdatePassiveIncomeInterval()
     {
-        if (GameController.CanAffordPassiveIncomeIntervalUpgrade())
+        if (GameController.CanAffordPassiveIncomeIntervalUpgrade() && GameController.UpgradesController.IsPassiveIncomeIntervalUpgradeAvailable())
         {
-            GameController.DecreasePassiveIncomeInterval();
-            GameController.SetNextPassiveIncomeIntervalUpgradeCost();
+            GameController.UpgradesController.DecreasePassiveIncomeInterval(ref GameController.GetPassiveIncomeInterval());
+            GameController.DeductUpdateFee(GameController.UpgradesController.NextPassiveIncomeIntervalUpgradeCost);
+            GameController.UpgradesController.SetNextPassiveIncomeIntervalUpgradeCost();
+            GameController.UpdatePassiveIncomeIntervalText();
         }
     }
-
 }

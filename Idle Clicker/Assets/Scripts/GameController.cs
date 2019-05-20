@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -10,124 +11,42 @@ public class GameController : MonoBehaviour
     private float ActiveIncome = 1;
     private float PassiveIncome = 0;
     private float PassiveIncomeInterval = 10;
-
-    private int CurrentPossibleActiveIncomeUpdateCount;
-    private int CurrentPossiblePassiveIncomeUpdateCount;
-    private int CurrentPossiblePassiveIncomeIntervalUpdateCount;
+    private float FinalPlayTime;
 
     public float CurrentMoney = 0;
-    public UpgradesDictionary UpgradesDictionary = new UpgradesDictionary();
-
-    public int NextActiveIncomeUpgradeCost;
-    public int NextPassiveIncomeUpgradeCost;
-    public int NextPassiveIncomeIntervalUpgradeCost;
 
     public TextMeshProUGUI MoneyText;
+    public TextMeshProUGUI ActiveIncomeMoneyText;
+    public TextMeshProUGUI PassiveIncomeMoneyText;
+    public TextMeshProUGUI PassiveIncomeIntervalText;
+
+    public UpgradesController UpgradesController;
+    public WinPopupController WinPopupController;
 
     void Start()
     {
-        CurrentPossibleActiveIncomeUpdateCount = UpgradesDictionary.GetUpgradeByKey(1).PossibleUpgradeOriginalAmount;
-        CurrentPossiblePassiveIncomeUpdateCount = UpgradesDictionary.GetUpgradeByKey(2).PossibleUpgradeOriginalAmount;
-        CurrentPossiblePassiveIncomeIntervalUpdateCount = UpgradesDictionary.GetUpgradeByKey(3).PossibleUpgradeOriginalAmount;
+        UpgradesController.InitializeUpdatesCount();
 
-        SetNextActiveIncomeUpgradeCost();
-        SetNextPassiveIncomeUpgradeCost();
-        SetNextPassiveIncomeIntervalUpgradeCost();
+        UpgradesController.SetNextActiveIncomeUpgradeCost(ActiveIncome);
+        UpgradesController.SetNextPassiveIncomeUpgradeCost();
+        UpgradesController.SetNextPassiveIncomeIntervalUpgradeCost();
+
+        StartPassiveIncomeCoroutine();
     }
 
-    public void AddMoneyFromButton() => CurrentMoney += ActiveIncome;
+    public ref float GetActiveIncome() => ref ActiveIncome;
 
-    public void AddMoneyOverTime() => CurrentMoney += PassiveIncome;
+    public ref float GetPassiveIncome() => ref PassiveIncome;
 
-    public bool CanAffordActiveIncomeUpgrade() => CurrentMoney >= NextActiveIncomeUpgradeCost;
+    public ref float GetPassiveIncomeInterval() => ref PassiveIncomeInterval;
 
-    public bool CanAffordPassiveIncomeUpgrade() => CurrentMoney >= NextPassiveIncomeUpgradeCost;
+    public bool CanAffordActiveIncomeUpgrade() => CurrentMoney >= UpgradesController.NextActiveIncomeUpgradeCost;
 
-    public bool CanAffordPassiveIncomeIntervalUpgrade()
-    {
-        var passiveIncomeIntervalFromDictionary = UpgradesDictionary.GetUpgradeByKey(3);
+    public bool CanAffordPassiveIncomeUpgrade() => CurrentMoney >= UpgradesController.NextPassiveIncomeUpgradeCost;
 
-        if (CurrentPossiblePassiveIncomeIntervalUpdateCount == passiveIncomeIntervalFromDictionary.PossibleUpgradeOriginalAmount)
-        {
-            return CurrentMoney >= passiveIncomeIntervalFromDictionary.FirstUpgradeCost;
-        }
+    public bool CanAffordPassiveIncomeIntervalUpgrade() => CurrentMoney >= UpgradesController.NextPassiveIncomeIntervalUpgradeCost;
 
-        return CurrentMoney >= passiveIncomeIntervalFromDictionary.FurtherUpgradesAdditionalCost;
-    }
-
-    public void SetNextActiveIncomeUpgradeCost()
-    {
-        if (CurrentPossibleActiveIncomeUpdateCount > 0)
-        {
-            var activeIncomeUpgradeFromDictionary = UpgradesDictionary.GetUpgradeByKey(1);
-            NextActiveIncomeUpgradeCost = (int)(ActiveIncome*activeIncomeUpgradeFromDictionary.ActiveIncomeUpgradeFactor * activeIncomeUpgradeFromDictionary.TimesOfNewActiveIncomeCost);
-        }
-    }
-
-    public void SetNextPassiveIncomeUpgradeCost()
-    {
-        if (CurrentPossiblePassiveIncomeUpdateCount == UpgradesDictionary.GetUpgradeByKey(2).PossibleUpgradeOriginalAmount)
-        {
-            NextPassiveIncomeUpgradeCost += UpgradesDictionary.GetUpgradeByKey(2).FirstUpgradeCost;
-        }
-        else
-        {
-            NextPassiveIncomeUpgradeCost += UpgradesDictionary.GetUpgradeByKey(2).FurtherUpgradesAdditionalCost;
-        }
-    }
-
-    public void SetNextPassiveIncomeIntervalUpgradeCost()
-    {
-        if (CurrentPossiblePassiveIncomeIntervalUpdateCount == UpgradesDictionary.GetUpgradeByKey(3).PossibleUpgradeOriginalAmount)
-        {
-            NextPassiveIncomeIntervalUpgradeCost = UpgradesDictionary.GetUpgradeByKey(3).FirstUpgradeCost;
-        }
-        else
-        {
-            NextPassiveIncomeIntervalUpgradeCost = UpgradesDictionary.GetUpgradeByKey(3).FurtherUpgradesAdditionalCost;
-        }
-    }
-
-    public void IncreaseActiveIncome()
-    {
-        if (CurrentPossibleActiveIncomeUpdateCount > 0)
-        {
-            ActiveIncome *= UpgradesDictionary.GetUpgradeByKey(1).ActiveIncomeUpgradeFactor;
-            CurrentPossibleActiveIncomeUpdateCount--;
-            DeductUpdateFee(NextActiveIncomeUpgradeCost);
-        }
-    }
-
-    public void IncreasePassiveIncome()
-    {
-        if (CurrentPossiblePassiveIncomeUpdateCount > 0)
-        {
-            PassiveIncome += UpgradesDictionary.GetUpgradeByKey(2).AmountOfMoneyAddedEachPassiveIncomeUpgrade;
-            CurrentPossiblePassiveIncomeUpdateCount--;
-            DeductUpdateFee(NextPassiveIncomeUpgradeCost);
-        }
-    }
-
-    public void DecreasePassiveIncomeInterval()
-    {
-        if (CurrentPossiblePassiveIncomeIntervalUpdateCount > 9)
-        {
-            PassiveIncomeInterval--;
-            CurrentPossiblePassiveIncomeIntervalUpdateCount--;
-            DeductUpdateFee(NextPassiveIncomeIntervalUpgradeCost);
-        }
-        else if(CurrentPossiblePassiveIncomeIntervalUpdateCount > 0)
-        {
-            PassiveIncomeInterval -= UpgradesDictionary.GetUpgradeByKey(3).AmountOfTimeForOtherUpgrades;
-            CurrentPossiblePassiveIncomeIntervalUpdateCount--;
-            DeductUpdateFee(NextPassiveIncomeIntervalUpgradeCost);
-        }
-    }
-
-    public void DeductUpdateFee(float fee)
-    {
-        CurrentMoney -= fee;
-    }
+    public void DeductUpdateFee(float fee) => CurrentMoney -= fee;
 
     public bool HasTheGameGoalHasBeenCompleted()
     {
@@ -137,5 +56,76 @@ public class GameController : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void AddMoney(float income)
+    {
+        CurrentMoney += income;
+
+        if (HasTheGameGoalHasBeenCompleted())
+        {
+            SaveBestTime();
+            WinPopupController.ShowWinPopup(FinalPlayTime);
+        }
+    }
+
+    public void StartPassiveIncomeCoroutine()
+    {
+        StartCoroutine(PassiveIncomeCoroutine());
+    }
+
+    public void UpdateMoneyText()
+    {
+        MoneyText.text = string.Format("$ {0}", CurrentMoney < TargetMoneySum ? CurrentMoney.ToString("0.0") : TargetMoneySum.ToString("0.0"));
+    }
+
+    public void UpdateActiveIncomeText()
+    {
+        ActiveIncomeMoneyText.text = string.Format("$ per click: {0}", ActiveIncome);
+    }
+
+    public void UpdatePassiveIncomeText()
+    {
+        PassiveIncomeMoneyText.text = string.Format("$ over time: {0}", PassiveIncome.ToString("0.0"));
+    }
+
+    public void UpdatePassiveIncomeIntervalText()
+    {
+        PassiveIncomeIntervalText.text = string.Format("Time interval: {0}s", PassiveIncomeInterval.ToString("0.0"));
+    }
+
+    private IEnumerator PassiveIncomeCoroutine()
+    {
+        yield return new WaitForSeconds(GetPassiveIncomeInterval());
+
+        if (PassiveIncome > 0)
+        {
+            AddMoney(PassiveIncome);
+            UpdateMoneyText();
+        }
+
+        StartPassiveIncomeCoroutine();
+    }
+
+    private float GetPlayTime()
+    {
+        return Time.timeSinceLevelLoad;
+    }
+
+    private void SaveBestTime()
+    {
+        FinalPlayTime = GetPlayTime();
+
+        if (PlayerPrefs.HasKey("BestTime"))
+        {
+            if(FinalPlayTime < PlayerPrefs.GetFloat("BestTime"))
+            {
+                PlayerPrefs.SetFloat("BestTime", GetPlayTime());
+            }
+        }
+        else
+        {
+            PlayerPrefs.SetFloat("BestTime", GetPlayTime());
+        }
     }
 }

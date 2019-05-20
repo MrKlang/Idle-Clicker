@@ -2,6 +2,7 @@
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
 
 public class MainMenuController : MonoBehaviour
 {
@@ -14,8 +15,23 @@ public class MainMenuController : MonoBehaviour
 
     void Start()
     {
+        DisplayBestTimeFromPlayerPrefs();
         NewGameButton.onClick.AddListener(() => { StartNewGame(); });
         ExitGameButton.onClick.AddListener(() => { ExitGame(); });
+    }
+
+    public void DisplayBestTimeFromPlayerPrefs()
+    {
+        if (PlayerPrefs.HasKey("BestTime"))
+        {
+            var bestTime = PlayerPrefs.GetFloat("BestTime");
+            TimeSpan timeSpan = TimeSpan.FromSeconds(bestTime);
+            HighScoreText.text = string.Format("Best time: {0:0} hrs {1:00} mins {2:00} secs",timeSpan.Hours,timeSpan.Minutes,timeSpan.Seconds);
+        }
+        else
+        {
+            HighScoreText.text = "Best time: NONE!";
+        }
     }
 
     private void ExitGame() =>
