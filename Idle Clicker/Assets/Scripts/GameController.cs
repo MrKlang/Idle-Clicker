@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
@@ -11,27 +13,46 @@ public class GameController : MonoBehaviour
     private float PassiveIncomeInterval = 10;
     private float FinalPlayTime;
 
+    private float PreBonusActiveIncome;
+    private float PreBonusPassiveIncome;
+    private float PreBonusPassiveIncomeInterval;
+
     private UpgradesController UpgradesController;
-    private WinPopupController WinPopupController;
-    private BonusController BonusController;
-    private TextsController TextsController;
+    private BonusDictionary BonusDictionary;
+    public TextsController TextsController;
+    public WinPopupController WinPopupController;
+
+    public List<Bonus> CurrentlyUsedBonuses = new List<Bonus>();
 
     void Start()
     {
-        UpgradesController.InitializeUpdatesCount();
+        UpgradesController = new UpgradesController();
+        BonusDictionary = new BonusDictionary();
+        PreBonusActiveIncome = ActiveIncome;
+        PreBonusPassiveIncome = PassiveIncome;
+        PreBonusPassiveIncomeInterval = PassiveIncomeInterval;
 
+        UpgradesController.InitializeUpdatesCount();
         UpgradesController.SetNextActiveIncomeUpgradeCost(ActiveIncome);
         UpgradesController.SetNextPassiveIncomeUpgradeCost();
         UpgradesController.SetNextPassiveIncomeIntervalUpgradeCost();
 
+        UpdateAllTexts();
+
         StartPassiveIncomeCoroutine();
     }
 
-    private ref float GetActiveIncome() => ref ActiveIncome;
+    private ref float GetActiveIncomeRef() => ref ActiveIncome;
 
-    private ref float GetPassiveIncome() => ref PassiveIncome;
+    private ref float GetPassiveIncomeRef() => ref PassiveIncome;
 
-    private ref float GetPassiveIncomeInterval() => ref PassiveIncomeInterval;
+    private ref float GetPassiveIncomeIntervalRef() => ref PassiveIncomeInterval;
+
+    private ref float GetPreBonusActiveIncomeRef() => ref PreBonusActiveIncome;
+
+    private ref float GetPreBonusPassiveIncomeRef() => ref PreBonusPassiveIncome;
+
+    private ref float GetPreBonusPassiveIncomeIntervalRef() => ref PreBonusPassiveIncomeInterval;
 
     private bool CanAffordActiveIncomeUpgrade() => CurrentMoney >= UpgradesController.NextActiveIncomeUpgradeCost;
 
@@ -69,7 +90,7 @@ public class GameController : MonoBehaviour
 
     private IEnumerator PassiveIncomeCoroutine()
     {
-        yield return new WaitForSeconds(GetPassiveIncomeInterval());
+        yield return new WaitForSeconds(GetPassiveIncomeIntervalRef());
 
         if (PassiveIncome > 0)
         {
@@ -102,14 +123,18 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public float DefineNextActiveIncomeUpgradeCost(ref float currentIncome, ref float incomeBeforeBonus)
+    {
+        return incomeBeforeBonus != currentIncome ? currentIncome - (currentIncome - incomeBeforeBonus) : currentIncome;
+    }
+
     public void IncreaseActiveIncome()
     {
         if (CanAffordActiveIncomeUpgrade() && UpgradesController.IsActiveIncomeUpgradeAvailable())
         {
-            UpgradesController.IncreaseActiveIncome(ref GetActiveIncome());
+            UpgradesController.IncreaseActiveIncome(ref GetActiveIncomeRef(), ref GetPreBonusActiveIncomeRef());
             DeductUpdateFee(UpgradesController.NextActiveIncomeUpgradeCost);
-            UpgradesController.SetNextActiveIncomeUpgradeCost(GetActiveIncome());
-            TextsController.UpdateActiveIncomeText(ref GetActiveIncome());
+            UpgradesController.SetNextActiveIncomeUpgradeCost(DefineNextActiveIncomeUpgradeCost(ref GetActiveIncomeRef(), ref GetPreBonusActiveIncomeRef()));
         }
     }
 
@@ -117,10 +142,10 @@ public class GameController : MonoBehaviour
     {
         if (CanAffordPassiveIncomeUpgrade() && UpgradesController.IsPassiveIncomeUpgradeAvailable())
         {
-            UpgradesController.IncreasePassiveIncome(ref GetPassiveIncome());
+            UpgradesController.IncreasePassiveIncome(ref GetPassiveIncomeRef(), ref GetPreBonusPassiveIncomeRef());
+            OverwriteValuesWithBonus(BonusDictionary.GetBonusByKey(2), ref GetPassiveIncomeRef(), ref GetPreBonusPassiveIncomeRef());
             DeductUpdateFee(UpgradesController.NextPassiveIncomeUpgradeCost);
             UpgradesController.SetNextPassiveIncomeUpgradeCost();
-            TextsController.UpdatePassiveIncomeText(ref GetPassiveIncome());
         }
     }
 
@@ -128,21 +153,101 @@ public class GameController : MonoBehaviour
     {
         if (CanAffordPassiveIncomeIntervalUpgrade() && UpgradesController.IsPassiveIncomeIntervalUpgradeAvailable())
         {
-            UpgradesController.DecreasePassiveIncomeInterval(ref GetPassiveIncomeInterval());
+            UpgradesController.DecreasePassiveIncomeInterval(ref GetPassiveIncomeIntervalRef(), ref GetPreBonusPassiveIncomeIntervalRef());
+            OverwriteValuesWithBonus(BonusDictionary.GetBonusByKey(3), ref GetPassiveIncomeIntervalRef(), ref GetPreBonusPassiveIncomeIntervalRef());
             DeductUpdateFee(UpgradesController.NextPassiveIncomeIntervalUpgradeCost);
             UpgradesController.SetNextPassiveIncomeIntervalUpgradeCost();
-            TextsController.UpdatePassiveIncomeIntervalText(ref GetPassiveIncomeInterval());
         }
     }
 
     public void OnButtonClickedAction()
     {
-        AddMoney(GetActiveIncome());
+        AddMoney(GetActiveIncomeRef());
         TextsController.UpdateMoneyText(CurrentMoney, TargetMoneySum);
     }
 
-    public void UpdateTotalMoneyText()
+    public void StartActiveIncomeBonusCoroutine(Bonus bonus)
+    {
+        if (!CurrentlyUsedBonuses.Contains(bonus))
+        {
+            CurrentlyUsedBonuses.Add(bonus);
+
+            switch (bonus.BonusEnum)
+            {
+                case BonusEnum.HigherActiveIncome:
+                    StartCoroutine(BonusCoroutine(bonus, ActiveIncome, PreBonusActiveIncome, ((newIncome, oldIncome) => { ActiveIncome = newIncome; PreBonusActiveIncome = oldIncome; })));
+                    break;
+                case BonusEnum.HigherPassiveIncome:
+                    StartCoroutine(BonusCoroutine(bonus, PassiveIncome, PreBonusPassiveIncome, ((newIncome, oldIncome) => { PassiveIncome = newIncome; PreBonusPassiveIncome = oldIncome; })));
+                    break;
+                case BonusEnum.FasterPassiveIncome:
+                    StartCoroutine(BonusCoroutine(bonus, PassiveIncomeInterval, PreBonusPassiveIncomeInterval, ((newIncome, oldIncome) => { PassiveIncomeInterval = newIncome; PreBonusPassiveIncomeInterval = oldIncome; })));
+                    break;
+            }
+        }
+    }
+
+    public void UpdateAllTexts()
     {
         TextsController.UpdateMoneyText(CurrentMoney, TargetMoneySum);
+        TextsController.UpdateActiveIncomeText(ActiveIncome, ActiveIncome - PreBonusActiveIncome);
+        TextsController.UpdatePassiveIncomeText(PassiveIncome, PassiveIncome - PreBonusPassiveIncome );
+        TextsController.UpdatePassiveIncomeIntervalText(PassiveIncomeInterval,  PassiveIncomeInterval - PreBonusPassiveIncomeInterval);
+
+        TextsController.UpdateMoreActiveIncomeButtonText(UpgradesController.NextActiveIncomeUpgradeCost);
+        TextsController.UpdateMorePassiveIncomeButtonText(UpgradesController.NextPassiveIncomeUpgradeCost);
+        TextsController.UpdateMorePassiveIncomeIntervalButtonText(UpgradesController.NextPassiveIncomeIntervalUpgradeCost);
+    }
+
+    private void OverwriteValuesWithBonus(Bonus bonus, ref float incomeOrInterval, ref float incomeOrIntervalPreBonus)
+    {
+        if (incomeOrInterval != incomeOrIntervalPreBonus)
+        {
+            if (bonus.BonusEnum != BonusEnum.FasterPassiveIncome)
+            {
+                incomeOrInterval = incomeOrIntervalPreBonus + (incomeOrIntervalPreBonus * bonus.PercentageIncrease);
+            }
+            else
+            {
+                incomeOrInterval = incomeOrIntervalPreBonus - (incomeOrIntervalPreBonus * bonus.PercentageIncrease);
+            }
+        }
+    }
+
+    private IEnumerator BonusCoroutine(Bonus bonus, float incomeOrInterval, float incomeOrIntervalPreBonus, Action<float,float> overwritingAction)
+    {
+        incomeOrIntervalPreBonus = incomeOrInterval;
+        if (bonus.BonusEnum != BonusEnum.FasterPassiveIncome)
+        {
+            incomeOrInterval += incomeOrInterval * bonus.PercentageIncrease;
+        }
+        else
+        {
+            incomeOrInterval -= incomeOrInterval * bonus.PercentageIncrease;
+        }
+        overwritingAction(incomeOrInterval, incomeOrIntervalPreBonus);
+        UpdateAllTexts();
+
+        yield return new WaitForSeconds(bonus.DurationInSeconds);
+            
+        EndBonus(bonus);
+        UpdateAllTexts();
+    }
+
+    private void EndBonus(Bonus bonus)
+    {
+        CurrentlyUsedBonuses.Remove(bonus);
+        switch (bonus.BonusEnum)
+        {
+            case BonusEnum.HigherActiveIncome :
+                ActiveIncome = PreBonusActiveIncome;
+                break;
+            case BonusEnum.HigherPassiveIncome :
+                PassiveIncome = PreBonusPassiveIncome;
+                break;
+            case BonusEnum.FasterPassiveIncome :
+                PassiveIncomeInterval = PreBonusPassiveIncomeInterval;
+                break;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class ButtonsController : MonoBehaviour
@@ -14,7 +15,9 @@ public class ButtonsController : MonoBehaviour
     [SerializeField]
     private Button BonusesButton;
 
+    public BonusPanelController BonusPanelController;
     public GameController GameController;
+
 
     void Start(){
         MainButton.onClick.AddListener(()=> 
@@ -25,19 +28,24 @@ public class ButtonsController : MonoBehaviour
         MoreActiveIncomeButton.onClick.AddListener(()=>
         {
             UpdateActiveIncome();
-            GameController.UpdateTotalMoneyText();
+            GameController.UpdateAllTexts();
         });
 
         MorePassiveIncomeButton.onClick.AddListener(() =>
         {
             UpdatePassiveIncome();
-            GameController.UpdateTotalMoneyText();
+            GameController.UpdateAllTexts();
         });
 
         FasterPassiveIncomeButton.onClick.AddListener(()=> 
         {
             UpdatePassiveIncomeInterval();
-            GameController.UpdateTotalMoneyText();
+            GameController.UpdateAllTexts();
+        });
+
+        BonusesButton.onClick.AddListener(()=> 
+        {
+            BonusPanelController.ShowPanel();
         });
     }
 

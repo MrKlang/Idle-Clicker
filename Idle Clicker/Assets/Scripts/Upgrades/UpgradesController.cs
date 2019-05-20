@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class UpgradesController : MonoBehaviour
+public class UpgradesController
 { 
     public int CurrentPossibleActiveIncomeUpdateCount { get; private set; }
     public int CurrentPossiblePassiveIncomeUpdateCount { get; private set; }
@@ -58,28 +58,32 @@ public class UpgradesController : MonoBehaviour
         }
     }
 
-    public void IncreaseActiveIncome(ref float income)
+    public void IncreaseActiveIncome(ref float income, ref float preBonusActiveIncome)
     {
         income *= UpgradesDictionary.GetUpgradeByKey(1).ActiveIncomeUpgradeFactor;
+        preBonusActiveIncome *= UpgradesDictionary.GetUpgradeByKey(1).ActiveIncomeUpgradeFactor;
         CurrentPossibleActiveIncomeUpdateCount--;
     }
 
-    public void IncreasePassiveIncome(ref float income)
+    public void IncreasePassiveIncome(ref float income, ref float preBonusPassiveIncome)
     {
         income += UpgradesDictionary.GetUpgradeByKey(2).AmountOfMoneyAddedEachPassiveIncomeUpgrade;
+        preBonusPassiveIncome += UpgradesDictionary.GetUpgradeByKey(2).AmountOfMoneyAddedEachPassiveIncomeUpgrade;
         CurrentPossiblePassiveIncomeUpdateCount--;
     }
 
-    public void DecreasePassiveIncomeInterval(ref float interval)
+    public void DecreasePassiveIncomeInterval(ref float interval, ref float preBonusInterval)
     {
         if (CurrentPossiblePassiveIncomeIntervalUpdateCount > 9)
         {
             interval--;
+            preBonusInterval--;
             CurrentPossiblePassiveIncomeIntervalUpdateCount--;
         }
         else
         {
             interval -= UpgradesDictionary.GetUpgradeByKey(3).AmountOfTimeForOtherUpgrades;
+            preBonusInterval -= UpgradesDictionary.GetUpgradeByKey(3).AmountOfTimeForOtherUpgrades;
             CurrentPossiblePassiveIncomeIntervalUpdateCount--;
         }
     }
