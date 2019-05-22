@@ -250,4 +250,18 @@ public class GameController : MonoBehaviour
                 break;
         }
     }
+
+    public void ModifyMoneyAmountOnEventCompletion(int value, bool isAbsolute)
+    {
+        if (isAbsolute)
+        {
+            CurrentMoney += value;
+        }
+        else
+        {
+            CurrentMoney += CurrentMoney * ((float)value/100);
+        }
+
+        UpdateAllTexts();
+    }
 }
