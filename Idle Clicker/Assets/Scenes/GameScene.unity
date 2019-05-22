@@ -273,7 +273,7 @@ MonoBehaviour:
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_DisabledColor: {r: 0.6509434, g: 0.43293878, b: 0.43293878, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -2416,6 +2416,21 @@ PrefabInstance:
       propertyPath: m_PreferredHeight
       value: 183
       objectReference: {fileID: 0}
+    - target: {fileID: 8588119208232465759, guid: 06b446c217e5e8c42b030fa59384f94c,
+        type: 3}
+      propertyPath: m_Colors.m_DisabledColor.r
+      value: 0.6509804
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588119208232465759, guid: 06b446c217e5e8c42b030fa59384f94c,
+        type: 3}
+      propertyPath: m_Colors.m_DisabledColor.g
+      value: 0.43137255
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588119208232465759, guid: 06b446c217e5e8c42b030fa59384f94c,
+        type: 3}
+      propertyPath: m_Colors.m_DisabledColor.b
+      value: 0.43137255
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 06b446c217e5e8c42b030fa59384f94c, type: 3}
 --- !u!224 &847966188 stripped
@@ -2951,6 +2966,21 @@ PrefabInstance:
       propertyPath: m_PreferredHeight
       value: 183
       objectReference: {fileID: 0}
+    - target: {fileID: 8588119208232465759, guid: 06b446c217e5e8c42b030fa59384f94c,
+        type: 3}
+      propertyPath: m_Colors.m_DisabledColor.r
+      value: 0.6509804
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588119208232465759, guid: 06b446c217e5e8c42b030fa59384f94c,
+        type: 3}
+      propertyPath: m_Colors.m_DisabledColor.g
+      value: 0.43137255
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588119208232465759, guid: 06b446c217e5e8c42b030fa59384f94c,
+        type: 3}
+      propertyPath: m_Colors.m_DisabledColor.b
+      value: 0.43137255
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 06b446c217e5e8c42b030fa59384f94c, type: 3}
 --- !u!224 &866920386 stripped
@@ -3215,7 +3245,7 @@ MonoBehaviour:
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_DisabledColor: {r: 0.6509804, g: 0.43137255, b: 0.43137255, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -3493,7 +3523,7 @@ MonoBehaviour:
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_DisabledColor: {r: 0.6509804, g: 0.43137255, b: 0.43137255, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -7094,6 +7124,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_PreferredHeight
       value: 183
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588119208232465759, guid: 06b446c217e5e8c42b030fa59384f94c,
+        type: 3}
+      propertyPath: m_Colors.m_DisabledColor.r
+      value: 0.6509804
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588119208232465759, guid: 06b446c217e5e8c42b030fa59384f94c,
+        type: 3}
+      propertyPath: m_Colors.m_DisabledColor.g
+      value: 0.43137255
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588119208232465759, guid: 06b446c217e5e8c42b030fa59384f94c,
+        type: 3}
+      propertyPath: m_Colors.m_DisabledColor.b
+      value: 0.43137255
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 06b446c217e5e8c42b030fa59384f94c, type: 3}

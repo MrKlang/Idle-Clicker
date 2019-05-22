@@ -19,12 +19,6 @@ public class UpgradesController
         CurrentPossiblePassiveIncomeIntervalUpdateCount = UpgradesDictionary.GetUpgradeByKey(3).PossibleUpgradeOriginalAmount;
     }
 
-    public bool IsActiveIncomeUpgradeAvailable() => CurrentPossibleActiveIncomeUpdateCount > 0;
-
-    public bool IsPassiveIncomeUpgradeAvailable() => CurrentPossiblePassiveIncomeUpdateCount > 0;
-
-    public bool IsPassiveIncomeIntervalUpgradeAvailable() => CurrentPossiblePassiveIncomeIntervalUpdateCount > 0;
-
     public void SetNextActiveIncomeUpgradeCost(float income)
     {
         if (CurrentPossibleActiveIncomeUpdateCount > 0)

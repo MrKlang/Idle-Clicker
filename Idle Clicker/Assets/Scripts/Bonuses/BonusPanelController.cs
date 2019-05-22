@@ -29,11 +29,12 @@ public class BonusPanelController : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI PassiveIncomeIntervalBonusPrice;
 
-    private BonusDictionary BonusDictionary;
+    private BonusDictionary BonusDictionary = new BonusDictionary();
     public GameController GameController;
 
     public void ShowPanel()
     {
+        DefineInteractibleButtons();
         gameObject.SetActive(true);
         Time.timeScale = 0;
     }
@@ -72,6 +73,13 @@ public class BonusPanelController : MonoBehaviour
 
         SetBonusesDescriptions();
         SetBonusesPrices();
+    }
+
+    private void DefineInteractibleButtons()
+    {
+        ActiveIncomeBonusBuyButton.interactable = GameController.CanBonusBeUsed(BonusDictionary.GetBonusByKey(1));
+        PassiveIncomeBonusBuyButton.interactable = GameController.CanBonusBeUsed(BonusDictionary.GetBonusByKey(2));
+        PassiveIncomeIntervalBonusBuyButton.interactable = GameController.CanBonusBeUsed(BonusDictionary.GetBonusByKey(3));
     }
 
     private void SetBonusesDescriptions()

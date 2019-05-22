@@ -52,15 +52,18 @@ public class ButtonsController : MonoBehaviour
     private void UpdateActiveIncome()
     {
         GameController.IncreaseActiveIncome();
+        MoreActiveIncomeButton.interactable = GameController.IsActiveIncomeUpgradeAvailable();
     }
 
     private void UpdatePassiveIncome()
     {
         GameController.IncreasePassiveIncome();
+        MorePassiveIncomeButton.interactable = GameController.IsPassiveIncomeUpgradeAvailable();
     }
 
     private void UpdatePassiveIncomeInterval()
     {
         GameController.DecreasePassiveIncomeInterval();
+        FasterPassiveIncomeButton.interactable = GameController.IsPassiveIncomeIntervalUpgradeAvailable();
     }
 }

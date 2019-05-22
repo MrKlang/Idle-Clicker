@@ -60,6 +60,12 @@ public class GameController : MonoBehaviour
 
     private bool CanAffordPassiveIncomeIntervalUpgrade() => CurrentMoney >= UpgradesController.NextPassiveIncomeIntervalUpgradeCost;
 
+    public bool IsActiveIncomeUpgradeAvailable() => UpgradesController.CurrentPossibleActiveIncomeUpdateCount > 0;
+
+    public bool IsPassiveIncomeUpgradeAvailable() => UpgradesController.CurrentPossiblePassiveIncomeUpdateCount > 0;
+
+    public bool IsPassiveIncomeIntervalUpgradeAvailable() => UpgradesController.CurrentPossiblePassiveIncomeIntervalUpdateCount > 0;
+
     private void DeductUpdateFee(float fee) => CurrentMoney -= fee;
 
     private bool HasTheGameGoalBeenCompleted()
@@ -130,7 +136,7 @@ public class GameController : MonoBehaviour
 
     public void IncreaseActiveIncome()
     {
-        if (CanAffordActiveIncomeUpgrade() && UpgradesController.IsActiveIncomeUpgradeAvailable())
+        if (CanAffordActiveIncomeUpgrade() && IsActiveIncomeUpgradeAvailable())
         {
             UpgradesController.IncreaseActiveIncome(ref GetActiveIncomeRef(), ref GetPreBonusActiveIncomeRef());
             DeductUpdateFee(UpgradesController.NextActiveIncomeUpgradeCost);
@@ -140,7 +146,7 @@ public class GameController : MonoBehaviour
 
     public void IncreasePassiveIncome()
     {
-        if (CanAffordPassiveIncomeUpgrade() && UpgradesController.IsPassiveIncomeUpgradeAvailable())
+        if (CanAffordPassiveIncomeUpgrade() && IsPassiveIncomeUpgradeAvailable())
         {
             UpgradesController.IncreasePassiveIncome(ref GetPassiveIncomeRef(), ref GetPreBonusPassiveIncomeRef());
             OverwriteValuesWithBonus(BonusDictionary.GetBonusByKey(2), ref GetPassiveIncomeRef(), ref GetPreBonusPassiveIncomeRef());
@@ -151,7 +157,7 @@ public class GameController : MonoBehaviour
 
     public void DecreasePassiveIncomeInterval()
     {
-        if (CanAffordPassiveIncomeIntervalUpgrade() && UpgradesController.IsPassiveIncomeIntervalUpgradeAvailable())
+        if (CanAffordPassiveIncomeIntervalUpgrade() && IsPassiveIncomeIntervalUpgradeAvailable())
         {
             UpgradesController.DecreasePassiveIncomeInterval(ref GetPassiveIncomeIntervalRef(), ref GetPreBonusPassiveIncomeIntervalRef());
             OverwriteValuesWithBonus(BonusDictionary.GetBonusByKey(3), ref GetPassiveIncomeIntervalRef(), ref GetPreBonusPassiveIncomeIntervalRef());
@@ -166,9 +172,14 @@ public class GameController : MonoBehaviour
         TextsController.UpdateMoneyText(CurrentMoney, TargetMoneySum);
     }
 
+    public bool CanBonusBeUsed(Bonus bonus)
+    {
+        return !CurrentlyUsedBonuses.Contains(bonus);
+    }
+
     public void StartActiveIncomeBonusCoroutine(Bonus bonus)
     {
-        if (!CurrentlyUsedBonuses.Contains(bonus))
+        if (CanBonusBeUsed(bonus))
         {
             CurrentlyUsedBonuses.Add(bonus);
 
